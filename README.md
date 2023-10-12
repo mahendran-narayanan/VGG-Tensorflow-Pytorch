@@ -17,14 +17,12 @@ To create model in Tensorflow:
 python3 main.py --model tf
 ```
 
-## Todo
- - Pytorch to be updated
-<!-- To create model in Pytorch:
+To create model in Pytorch:
 
 ```
 python3 main.py --model torch
 ```
- -->
+
 
 ## VGG Diagram
 

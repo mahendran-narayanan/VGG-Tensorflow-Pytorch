@@ -18,7 +18,7 @@ python3 main.py --model tf
 ```
 
 ## Todo:
-    Pytorch to be updated
+ - Pytorch to be updated
 <!-- To create model in Pytorch:
 
 ```

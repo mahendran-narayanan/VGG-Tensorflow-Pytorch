@@ -125,13 +125,15 @@ def model_tf():
 def main(args):
 	if args.model=='tf':
 		print('Model will be created in Tensorflow')
-		model = model_tf()
-		model.build(input_shape=(None,224,224,3))
-		model.summary()
+		if args.depth=='11':
+			model = model_tf()
+			model.build(input_shape=(None,224,224,3))
+			model.summary()
 	else:
 		print('Model will be created in Pytorch')
-		model = model_torch()
-		print(model)
+		if args.depth=='11':
+			model = model_torch()
+			print(model)
 
 
 if __name__ == '__main__':
@@ -140,5 +142,9 @@ if __name__ == '__main__':
 	                    default='tf',
 	                    choices=['tf', 'torch'],
 	                    help='Model will be created on Tensorflow, Pytorch (default: %(default)s)')
+	parser.add_argument('--depth',
+	                    default='11',
+	                    choices=['11', '13', '16', '19'],
+	                    help='VGG model depth (default: %(default)s)')
 	args = parser.parse_args()
 	main(args)

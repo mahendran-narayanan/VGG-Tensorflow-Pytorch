@@ -17,7 +17,7 @@ To create model in Tensorflow:
 python3 main.py --model tf
 ```
 
-## Todo:
+## Todo
  - Pytorch to be updated
 <!-- To create model in Pytorch:
 
@@ -25,6 +25,9 @@ python3 main.py --model tf
 python3 main.py --model torch
 ```
  -->
+
+## VGG Diagram
+
 ![alt text](Pictures/VGG.png)
 
 VGG : [Method](https://paperswithcode.com/method/vgg)

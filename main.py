@@ -18,6 +18,23 @@ def conv_mp_tf(kernels,kernelsize,stride,pad,poolsize,poolstride,name):
 	layer.append(tf.keras.layers.MaxPooling2D(pool_size=(poolsize,poolsize),strides=poolstride))
 	return tf.keras.Sequential(layer,name='conv_bn_relu_mp_'+str(name))
 
+def conv_torc(in_c,out_c,kernelsize,stride,pad): #kernels,kernelsize,stride,pad,name):
+	layer = torch.nn.Sequential(
+			torch.nn.Conv2d(in_c,out_c,kernelsize,stride=stride,padding=pad),
+			torch.nn.BatchNorm2d(out_c),
+			torch.nn.ReLU()
+		)
+	return layer
+
+def conv_mp_torc(in_c,out_c,kernelsize,stride,pad,mpkernels,mpstride): #kernels,kernelsize,stride,pad,name):
+	layer = torch.nn.Sequential(
+			torch.nn.Conv2d(in_c,out_c,kernelsize,stride=stride,padding=pad),
+			torch.nn.BatchNorm2d(out_c),
+			torch.nn.ReLU(),
+			torch.nn.MaxPool2d(kernel_size=mpkernels,stride=mpstride)
+		)
+	return layer
+
 class VGG_tf(tf.keras.Model):
 	def __init__(self):
 		super().__init__()
@@ -56,35 +73,14 @@ class VGG_tf(tf.keras.Model):
 class VGG_torch(torch.nn.Module):
 	def __init__(self):
 		super().__init__()
-		self.conv1 = torch.nn.Conv2d(3,64,3,stride=1,padding=1)
-		self.bn1 = torch.nn.BatchNorm2d(64)
-		self.relu1 = torch.nn.ReLU()
-		self.maxpool1 = torch.nn.MaxPool2d(kernel_size=2,stride=2)
-		self.conv2 = torch.nn.Conv2d(64,128,3,stride=1,padding=1)
-		self.bn2 = torch.nn.BatchNorm2d(128)
-		self.relu2 = torch.nn.ReLU()
-		self.maxpool2 = torch.nn.MaxPool2d(kernel_size=2,stride=2)
-		self.conv3 = torch.nn.Conv2d(128,256,3,stride=1,padding=1)
-		self.bn3 = torch.nn.BatchNorm2d(256)
-		self.relu3 = torch.nn.ReLU()
-		self.conv4 = torch.nn.Conv2d(256,256,3,stride=1,padding=1)
-		self.bn4 = torch.nn.BatchNorm2d(256)
-		self.relu4 = torch.nn.ReLU()
-		self.maxpool3 = torch.nn.MaxPool2d(kernel_size=2,stride=2)
-		self.conv5 = torch.nn.Conv2d(256,512,3,stride=1,padding=1)
-		self.bn5 = torch.nn.BatchNorm2d(512)
-		self.relu5 = torch.nn.ReLU()
-		self.conv6 = torch.nn.Conv2d(512,512,3,stride=1,padding=1)
-		self.bn6 = torch.nn.BatchNorm2d(512)
-		self.relu6 = torch.nn.ReLU()
-		self.maxpool4 = torch.nn.MaxPool2d(kernel_size=2,stride=2)
-		self.conv7 = torch.nn.Conv2d(512,512,3,stride=1,padding=1)
-		self.bn7 = torch.nn.BatchNorm2d(512)
-		self.relu7 = torch.nn.ReLU()
-		self.conv8 = torch.nn.Conv2d(512,512,3,stride=1,padding=1)
-		self.bn8 = torch.nn.BatchNorm2d(512)
-		self.relu8 = torch.nn.ReLU()
-		self.maxpool5 = torch.nn.MaxPool2d(kernel_size=2,stride=2)
+		self.conv1 = conv_mp_torc(3,64,3,1,1,2,2)
+		self.conv2 = conv_mp_torc(64,128,3,1,1,2,2)
+		self.conv3 = conv_torc(128,256,3,1,1)
+		self.conv4 = conv_mp_torc(256,256,3,1,1,2,2)
+		self.conv5 = conv_torc(256,512,3,1,1)
+		self.conv6 = conv_mp_torc(512,512,3,1,1,2,2)
+		self.conv7 = conv_torc(512,512,3,1,1)
+		self.conv8 = conv_mp_torc(512,512,3,1,1,2,2)
 		self.avgpool = torch.nn.AdaptiveAvgPool2d((7,7))
 		self.dense1 = torch.nn.Linear(512*7*7,4096)
 		self.relu9 = torch.nn.ReLU()
@@ -95,14 +91,14 @@ class VGG_torch(torch.nn.Module):
 		self.classifier = torch.nn.Linear(4096,1000)
 		
 	def forward(self, x):
-		x = self.maxpool1(self.relu1(self.bn1(self.conv1(x))))
-		x = self.maxpool2(self.relu2(self.bn2(self.conv2(x))))
-		x = self.relu3(self.bn3(self.conv3(x)))
-		x = self.maxpool3(self.relu4(self.bn4(self.conv4(x))))
-		x = self.relu5(self.bn5(self.conv5(x)))
-		x = self.maxpool4(self.relu6(self.bn6(self.conv6(x))))
-		x = self.relu7(self.bn7(self.conv7(x)))
-		x = self.maxpool5(self.relu8(self.bn8(self.conv8(x))))
+		x = self.conv1(x)
+		x = self.conv2(x)
+		x = self.conv3(x)
+		x = self.conv4(x)
+		x = self.conv5(x)
+		x = self.conv6(x)
+		x = self.conv7(x)
+		x = self.conv8(x)
 		x = self.avgpool(x)
 		x = self.drop1(self.relu9(self.dense1(x)))
 		x = self.drop2(self.relu10(self.dense2(x)))

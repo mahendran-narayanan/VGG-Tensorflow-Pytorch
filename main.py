@@ -70,6 +70,45 @@ class VGG_tf(tf.keras.Model):
 		x = self.classifier(x)
 		return x
 
+class VGG_tf13(tf.keras.Model):
+	def __init__(self):
+		super().__init__()
+		self.conv1 = conv_tf(64,3,1,'SAME',1)
+		self.conv2 = conv_mp_tf(64,3,1,'SAME',2,2,2)
+		self.conv3 = conv_tf(128,3,1,'SAME',3)
+		self.conv4 = conv_mp_tf(128,3,1,'SAME',2,2,4)
+		self.conv5 = conv_tf(256,3,1,'SAME',5)
+		self.conv6 = conv_mp_tf(256,3,1,'SAME',2,2,6)
+		self.conv7 = conv_tf(512,3,1,'SAME',7)
+		self.conv8 = conv_mp_tf(512,3,1,'SAME',2,2,8)
+		self.conv9 = conv_tf(512,3,1,'SAME',9)
+		self.conv10 = conv_mp_tf(512,3,1,'SAME',2,2,10)
+		self.avgpool = tfa.layers.AdaptiveAveragePooling2D(output_size=7)
+		self.dense1 = tf.keras.layers.Dense(4096)
+		self.relu9 = tf.keras.layers.ReLU()
+		self.drop1 = tf.keras.layers.Dropout(rate=0.5)
+		self.dense2 = tf.keras.layers.Dense(4096)
+		self.relu10 = tf.keras.layers.ReLU()
+		self.drop2 = tf.keras.layers.Dropout(rate=0.5)
+		self.classifier = tf.keras.layers.Dense(1000,activation='sigmoid')
+
+	def call(self,x):
+		x = self.conv1(x)
+		x = self.conv2(x)
+		x = self.conv3(x)
+		x = self.conv4(x)
+		x = self.conv5(x)
+		x = self.conv6(x)
+		x = self.conv7(x)
+		x = self.conv8(x)
+		x = self.conv9(x)
+		x = self.conv10(x)
+		x = self.avgpool(x)
+		x = self.drop1(self.relu9(self.dense1(x)))
+		x = self.drop2(self.relu10(self.dense2(x)))
+		x = self.classifier(x)
+		return x
+
 class VGG_torch(torch.nn.Module):
 	def __init__(self):
 		super().__init__()
@@ -108,14 +147,21 @@ class VGG_torch(torch.nn.Module):
 def model_torch():
 	return VGG_torch()
 
-def model_tf():
+def model_tf_11():
 	return VGG_tf()
+
+def model_tf_13():
+	return VGG_tf13()
 
 def main(args):
 	if args.model=='tf':
 		print('Model will be created in Tensorflow')
 		if args.depth=='11':
-			model = model_tf()
+			model = model_tf_11()
+			model.build(input_shape=(None,224,224,3))
+			model.summary()
+		elif args.depth=='13':
+			model = model_tf_13()
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 	else:

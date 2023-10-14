@@ -237,8 +237,50 @@ class VGG_torch(torch.nn.Module):
 		x = self.classifier(x)
 		return x
 
+class VGG_torch13(torch.nn.Module):
+	def __init__(self):
+		super().__init__()
+		self.conv1 = conv_torc(3,64,3,1,1)
+		self.conv2 = conv_mp_torc(64,64,3,1,1,2,2)
+		self.conv3 = conv_torc(64,128,3,1,1)
+		self.conv4 = conv_mp_torc(128,128,3,1,1,2,2)
+		self.conv5 = conv_torc(128,256,3,1,1)
+		self.conv6 = conv_mp_torc(256,256,3,1,1,2,2)
+		self.conv7 = conv_torc(256,512,3,1,1)
+		self.conv8 = conv_mp_torc(512,512,3,1,1,2,2)
+		self.conv9 = conv_torc(512,512,3,1,1)
+		self.conv10 = conv_mp_torc(512,512,3,1,1,2,2)
+		self.avgpool = torch.nn.AdaptiveAvgPool2d((7,7))
+		self.dense1 = torch.nn.Linear(512*7*7,4096)
+		self.relu9 = torch.nn.ReLU()
+		self.drop1 = torch.nn.Dropout()
+		self.dense2 = torch.nn.Linear(4096,4096)
+		self.relu10 = torch.nn.ReLU()
+		self.drop2 = torch.nn.Dropout()
+		self.classifier = torch.nn.Linear(4096,1000)
+		
+	def forward(self, x):
+		x = self.conv1(x)
+		x = self.conv2(x)
+		x = self.conv3(x)
+		x = self.conv4(x)
+		x = self.conv5(x)
+		x = self.conv6(x)
+		x = self.conv7(x)
+		x = self.conv8(x)
+		x = self.conv9(x)
+		x = self.conv10(x)
+		x = self.avgpool(x)
+		x = self.drop1(self.relu9(self.dense1(x)))
+		x = self.drop2(self.relu10(self.dense2(x)))
+		x = self.classifier(x)
+		return x
+
 def model_torch():
 	return VGG_torch()
+
+def model_torch13():
+	return VGG_torch13()
 
 def model_tf_11():
 	return VGG_tf()
@@ -254,7 +296,7 @@ def model_tf_19():
 
 def main(args):
 	if args.model=='tf':
-		print('Model will be created in Tensorflow')
+		print('Model VGG_'+str(args.depth)+' will be created in Tensorflow')
 		if args.depth=='11':
 			model = model_tf_11()
 			model.build(input_shape=(None,224,224,3))
@@ -272,9 +314,12 @@ def main(args):
 			model.build(input_shape=(None,224,224,3))
 			model.summary()
 	else:
-		print('Model will be created in Pytorch')
+		print('Model VGG_'+str(args.depth)+' will be created in Pytorch')
 		if args.depth=='11':
 			model = model_torch()
+			print(model)
+		elif args.depth=='13':
+			model = model_torch13()
 			print(model)
 
 
